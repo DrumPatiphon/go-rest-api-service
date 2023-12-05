@@ -2,8 +2,8 @@ package mornitorHandlers
 
 import (
 	"github.com/DrumPatiphon/go-rest-api-service/config"
-	"github.com/DrumPatiphon/go-rest-api-service/modules/users/entities"
-	"github.com/DrumPatiphon/go-rest-api-service/modules/users/monitor"
+	"github.com/DrumPatiphon/go-rest-api-service/modules/entities"
+	"github.com/DrumPatiphon/go-rest-api-service/modules/monitor"
 	"github.com/gofiber/fiber/v2"
 )
 

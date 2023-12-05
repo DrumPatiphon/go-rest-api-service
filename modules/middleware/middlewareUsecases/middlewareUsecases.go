@@ -1,6 +1,6 @@
 package middlewareusecases
 
-import middlewareRepositories "github.com/DrumPatiphon/go-rest-api-service/modules/users/middleware/middlewareRepositories"
+import middlewareRepositories "github.com/DrumPatiphon/go-rest-api-service/modules/middleware/middlewareRepositories"
 
 type ImiddlewareUsecase interface {
 }

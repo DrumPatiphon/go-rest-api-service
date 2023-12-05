@@ -1,10 +1,10 @@
 package severs
 
 import (
-	middlewareHandlers "github.com/DrumPatiphon/go-rest-api-service/modules/users/middleware/middlewareHandlers"
-	middlewareRepositories "github.com/DrumPatiphon/go-rest-api-service/modules/users/middleware/middlewareRepositories"
-	middlewareUsecases "github.com/DrumPatiphon/go-rest-api-service/modules/users/middleware/middlewareUsecases"
-	mornitorHandlers "github.com/DrumPatiphon/go-rest-api-service/modules/users/monitor/monitorHandlers"
+	middlewareHandlers "github.com/DrumPatiphon/go-rest-api-service/modules/middleware/middlewareHandlers"
+	middlewareRepositories "github.com/DrumPatiphon/go-rest-api-service/modules/middleware/middlewareRepositories"
+	middlewareUsecases "github.com/DrumPatiphon/go-rest-api-service/modules/middleware/middlewareUsecases"
+	mornitorHandlers "github.com/DrumPatiphon/go-rest-api-service/modules/monitor/monitorHandlers"
 	"github.com/gofiber/fiber/v2"
 )
 

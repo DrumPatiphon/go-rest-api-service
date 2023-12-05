@@ -4,7 +4,7 @@ import (
 	"os"
 
 	"github.com/DrumPatiphon/go-rest-api-service/config"
-	"github.com/DrumPatiphon/go-rest-api-service/modules/users/severs"
+	"github.com/DrumPatiphon/go-rest-api-service/modules/severs"
 	"github.com/DrumPatiphon/go-rest-api-service/pkg/database"
 )
 

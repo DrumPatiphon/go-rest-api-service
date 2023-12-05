@@ -2,8 +2,8 @@ package middlewarehandlers
 
 import (
 	"github.com/DrumPatiphon/go-rest-api-service/config"
-	"github.com/DrumPatiphon/go-rest-api-service/modules/users/entities"
-	middlewareUsecases "github.com/DrumPatiphon/go-rest-api-service/modules/users/middleware/middlewareUsecases"
+	"github.com/DrumPatiphon/go-rest-api-service/modules/entities"
+	middlewareUsecases "github.com/DrumPatiphon/go-rest-api-service/modules/middleware/middlewareUsecases"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/logger"
