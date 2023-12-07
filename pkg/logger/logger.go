@@ -54,7 +54,7 @@ func (l *logger) Save() {
 	data := utils.Output(l)
 
 	filename := fmt.Sprintf("./assets/logs/logger_%v.txt", strings.ReplaceAll(time.Now().Format("2006-01-02"), "-", ""))
-	file, err := os.OpenFile(filename, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666) // 0666 is UNIX code of permission meaning is can read erite create but can't delete
+	file, err := os.OpenFile(filename, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666) // 0666 is UNIX code of permission meaning is can read edit create but can't delete
 	if err != nil {
 		log.Fatalf("error opening file: %v", err)
 	}
