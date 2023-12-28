@@ -44,7 +44,7 @@ func (module *moduleFactory) MonitorModule() {
 }
 
 func (module *moduleFactory) UserModule() {
-	repository := usersRepositories.UserRepositories(module.sever.db)
+	repository := usersRepositories.UserRepository(module.sever.db)
 	usecase := usersUsecases.UserUsecases(module.sever.cfg, repository)
 	handler := usersHandlers.UserHandler(module.sever.cfg, usecase)
 
@@ -52,5 +52,15 @@ func (module *moduleFactory) UserModule() {
 	router := module.router.Group("/users")
 
 	router.Post("/signup", handler.SignUpCustomer)
+	router.Post("/signIn", handler.SignIn)
+	router.Post("/refresh", handler.RefreshPassport)
+	router.Post("/signout", handler.SignOut)
+	router.Post("/signup-admin", handler.SignOut)
 
+	router.Get("/:user_id", module.middleware.JwtAuth(), module.middleware.ParamsCheck(), handler.GetUserProfile)
+	router.Get("/admin/secret", module.middleware.JwtAuth(), module.middleware.Autorize(2), handler.GenerateAdminToken)
+
+	// Initial admin ขึ้นมา 1 คนใน Database (insert ใน sql)
+	// Generate Admin Key
+	// ทุกครั้งที่ทำการสมัคร admin เพิ่ม ให้ส่ง Admin Token มาด้วยทุกครั้ง ผ่าน Middleware
 }

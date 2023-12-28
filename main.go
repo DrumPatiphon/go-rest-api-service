@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"os"
 
 	"github.com/DrumPatiphon/go-rest-api-service/config"
@@ -20,6 +21,8 @@ func main() {
 	cfg := config.LoadConfig(envPath())
 
 	db := database.DbConnect(cfg.Db())
+
+	fmt.Println(cfg.Db())
 	defer db.Close()
 
 	severs.NewSever(cfg, db).Start()

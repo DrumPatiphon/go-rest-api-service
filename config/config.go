@@ -168,8 +168,8 @@ func (c *config) Db() IDbConfig {
 }
 func (d *db) Url() string {
 	return fmt.Sprintf(
-		"host=%s port=%d user=%s password=%s sslmode=%s",
-		d.host, d.port, d.username, d.password, d.sslMode,
+		"host=%s port=%d user=%s password=%s dbname=%s sslmode=%s",
+		d.host, d.port, d.username, d.password, d.database, d.sslMode,
 	)
 }
 func (d *db) MaxOpenConns() int { return d.maxConnections }
