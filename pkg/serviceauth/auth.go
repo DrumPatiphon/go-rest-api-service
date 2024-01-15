@@ -25,7 +25,11 @@ type serviceAuth struct {
 	cfg       config.IJwtConfig
 }
 
-type ServiceAdmin struct {
+type serviceAdmin struct {
+	*serviceAuth
+}
+
+type serviceApiKey struct {
 	*serviceAuth
 }
 
@@ -40,6 +44,9 @@ type IServiceAuth interface {
 type IserviceAdmin interface {
 	SignToken() string
 }
+type IserviceApiKey interface {
+	SignToken() string
+}
 
 func (a *serviceAuth) SignToken() string {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, a.mapClaims) // Sign Token with Payload
@@ -47,9 +54,15 @@ func (a *serviceAuth) SignToken() string {
 	return ss
 }
 
-func (a *ServiceAdmin) SignToken() string {
+func (a *serviceAdmin) SignToken() string {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, a.mapClaims) // Sign Token with Payload
 	ss, _ := token.SignedString(a.cfg.AdminKey())
+	return ss
+}
+
+func (a *serviceApiKey) SignToken() string {
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, a.mapClaims) // Sign Token with Payload
+	ss, _ := token.SignedString(a.cfg.ApiKey())
 	return ss
 }
 
@@ -101,6 +114,30 @@ func ParseAdminToken(cfg config.IJwtConfig, tokenString string) (*serviceMapClai
 	}
 }
 
+func ParseApiKey(cfg config.IJwtConfig, tokenString string) (*serviceMapClaim, error) {
+	token, err := jwt.ParseWithClaims(tokenString, &serviceMapClaim{}, func(t *jwt.Token) (interface{}, error) {
+		if _, ok := t.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, fmt.Errorf("singing method is invalid")
+		}
+		return cfg.ApiKey(), nil
+	})
+	if err != nil {
+		if errors.Is(err, jwt.ErrTokenMalformed) {
+			return nil, fmt.Errorf("token fomat is invalid")
+		} else if errors.Is(err, jwt.ErrTokenExpired) {
+			return nil, fmt.Errorf("token has expired")
+		} else {
+			return nil, fmt.Errorf("parse token failed: %v", err)
+		}
+	}
+
+	if claims, ok := token.Claims.(*serviceMapClaim); ok {
+		return claims, nil
+	} else {
+		return nil, fmt.Errorf("claims type is invalid")
+	}
+}
+
 func jwtTimeDurationCal(t int) *jwt.NumericDate {
 	return jwt.NewNumericDate(time.Now().Add(time.Duration(int64(t) * int64(math.Pow10(9)))))
 }
@@ -134,6 +171,8 @@ func NewServiceAuth(tokenType TokenType, cfg config.IJwtConfig, claims *users.Us
 		return newRefreshToken(cfg, claims), nil
 	case Admin:
 		return newAdminToken(cfg), nil
+	case ApiKey:
+		return newApiKey(cfg), nil
 	default:
 		return nil, fmt.Errorf("unknow tokenType")
 	}
@@ -173,7 +212,7 @@ func newRefreshToken(cfg config.IJwtConfig, claims *users.UserClaims) IServiceAu
 }
 
 func newAdminToken(cfg config.IJwtConfig) IServiceAuth {
-	return &ServiceAdmin{
+	return &serviceAdmin{
 		serviceAuth: &serviceAuth{
 			cfg: cfg,
 			mapClaims: &serviceMapClaim{
@@ -183,6 +222,26 @@ func newAdminToken(cfg config.IJwtConfig) IServiceAuth {
 					Subject:   "admin-token",
 					Audience:  []string{"admin"},
 					ExpiresAt: jwtTimeDurationCal(300),
+					NotBefore: jwt.NewNumericDate(time.Now()),
+					IssuedAt:  jwt.NewNumericDate(time.Now()),
+				},
+			},
+		},
+	}
+
+}
+
+func newApiKey(cfg config.IJwtConfig) IServiceAuth {
+	return &serviceApiKey{
+		serviceAuth: &serviceAuth{
+			cfg: cfg,
+			mapClaims: &serviceMapClaim{
+				Claims: nil,
+				RegisteredClaims: jwt.RegisteredClaims{
+					Issuer:    "ecommerceshop-api",
+					Subject:   "api-key",
+					Audience:  []string{"admin", "customer"},
+					ExpiresAt: jwt.NewNumericDate(time.Now().AddDate(2, 0, 0)),
 					NotBefore: jwt.NewNumericDate(time.Now()),
 					IssuedAt:  jwt.NewNumericDate(time.Now()),
 				},
