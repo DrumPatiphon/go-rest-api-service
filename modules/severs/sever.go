@@ -52,6 +52,7 @@ func (sever *sever) Start() {
 	modules.UserModule()
 	modules.AppInfoModule()
 	modules.FilesModule()
+	modules.ProductsModule()
 
 	sever.app.Use(middlewares.RouterCheck())
 

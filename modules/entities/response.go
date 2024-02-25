@@ -53,5 +53,12 @@ func (r *Response) Res() error {
 		}
 		return &r.Data
 	}())
+}
 
+type PageRes struct {
+	Data       any `json:"data"`
+	Page       any `json:"page"`
+	Limit      int `json:"limit"`
+	TotalPage  int `json:"total_page"`
+	TotalItems int `json:"total_items"`
 }

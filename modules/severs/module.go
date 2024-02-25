@@ -10,6 +10,9 @@ import (
 	middlewareRepositories "github.com/DrumPatiphon/go-rest-api-service/modules/middleware/middlewareRepositories"
 	middlewareUsecases "github.com/DrumPatiphon/go-rest-api-service/modules/middleware/middlewareUsecases"
 	mornitorHandlers "github.com/DrumPatiphon/go-rest-api-service/modules/monitor/monitorHandlers"
+	"github.com/DrumPatiphon/go-rest-api-service/modules/products/productsHandlers"
+	"github.com/DrumPatiphon/go-rest-api-service/modules/products/productsRepositories"
+	"github.com/DrumPatiphon/go-rest-api-service/modules/products/productsUsecases"
 	"github.com/DrumPatiphon/go-rest-api-service/modules/users/usersHandlers"
 	"github.com/DrumPatiphon/go-rest-api-service/modules/users/usersRepositories"
 	"github.com/DrumPatiphon/go-rest-api-service/modules/users/usersUsecases"
@@ -21,6 +24,7 @@ type IModuleFactory interface {
 	UserModule()
 	AppInfoModule()
 	FilesModule()
+	ProductsModule()
 }
 
 type moduleFactory struct {
@@ -95,4 +99,20 @@ func (m *moduleFactory) FilesModule() {
 
 	router.Post("/upload", m.middleware.JwtAuth(), m.middleware.Autorize(2), handler.UploadFile)
 	router.Patch("/delete", m.middleware.JwtAuth(), m.middleware.Autorize(2), handler.DeleteFile) //ใช้ patch จะได้เพิ่ม body
+}
+
+func (m *moduleFactory) ProductsModule() {
+	fileUsecase := filesUsecases.FilesUsecase(m.sever.cfg)
+
+	productsRepository := productsRepositories.ProductRepository(m.sever.db, m.sever.cfg, fileUsecase)
+	productsUsecase := productsUsecases.ProductsUsecases(productsRepository)
+	productsHandler := productsHandlers.ProductsHandler(m.sever.cfg, productsUsecase, fileUsecase)
+
+	router := m.router.Group("/products")
+
+	router.Post("/", m.middleware.JwtAuth(), m.middleware.Autorize(2), productsHandler.InsertProduct)
+	router.Patch("/:product_id", m.middleware.JwtAuth(), m.middleware.Autorize(2), productsHandler.UpdateProduct)
+
+	router.Get("/", m.middleware.ApiKeyAuth(), productsHandler.FindProduct)
+	router.Get("/:product_id", m.middleware.ApiKeyAuth(), productsHandler.FindOneProduct)
 }
