@@ -8,6 +8,7 @@ import (
 	"github.com/DrumPatiphon/go-rest-api-service/config"
 	"github.com/DrumPatiphon/go-rest-api-service/modules/appInfo"
 	"github.com/DrumPatiphon/go-rest-api-service/modules/entities"
+	"github.com/DrumPatiphon/go-rest-api-service/modules/files"
 	"github.com/DrumPatiphon/go-rest-api-service/modules/files/filesUsecases"
 	"github.com/DrumPatiphon/go-rest-api-service/modules/products"
 	"github.com/DrumPatiphon/go-rest-api-service/modules/products/productsUsecases"
@@ -21,6 +22,7 @@ const (
 	findProductErr    productsHandlerErrCode = "products-002"
 	insertProductErr  productsHandlerErrCode = "products-003"
 	updateProductErr  productsHandlerErrCode = "products-004"
+	deleteProductErr  productsHandlerErrCode = "products-005"
 )
 
 type IProductHandler interface {
@@ -28,6 +30,7 @@ type IProductHandler interface {
 	FindProduct(c *fiber.Ctx) error
 	InsertProduct(c *fiber.Ctx) error
 	UpdateProduct(c *fiber.Ctx) error
+	DeleteProduct(c *fiber.Ctx) error
 }
 
 type productsHandler struct {
@@ -150,4 +153,46 @@ func (h *productsHandler) UpdateProduct(c *fiber.Ctx) error {
 		).Res()
 	}
 	return entities.NewResponse(c).Success(fiber.StatusCreated, product).Res()
+}
+
+func (h *productsHandler) DeleteProduct(c *fiber.Ctx) error {
+	productId := strings.Trim(c.Params("product_id"), " ")
+
+	product, err := h.productsUsecases.FindOneProduct(productId)
+	if err != nil {
+		return entities.NewResponse(c).Error(
+			fiber.ErrBadRequest.Code,
+			string(deleteProductErr),
+			err.Error(),
+		).Res()
+	}
+
+	deleteFileReq := make([]*files.DeleteFileReq, 0)
+	for _, p := range product.Images {
+		deleteFileReq = append(deleteFileReq, &files.DeleteFileReq{
+			Destination: fmt.Sprintf("image/test/%s", p.FileName),
+		})
+	}
+
+	if err := h.filesUsecases.DeleteFileOnGCP(deleteFileReq); err != nil {
+		_, file, line, _ := runtime.Caller(0)
+		errMsg := fmt.Sprintf("%s:%d %s", file, line, err.Error())
+		return entities.NewResponse(c).Error(
+			fiber.ErrInternalServerError.Code,
+			string(deleteProductErr),
+			errMsg,
+		).Res()
+	}
+
+	if err := h.productsUsecases.DeleteProduct(productId); err != nil {
+		_, file, line, _ := runtime.Caller(0)
+		errMsg := fmt.Sprintf("%s:%d %s", file, line, err.Error())
+		return entities.NewResponse(c).Error(
+			fiber.ErrInternalServerError.Code,
+			string(deleteProductErr),
+			errMsg,
+		).Res()
+	}
+
+	return entities.NewResponse(c).Success(fiber.StatusNoContent, nil).Res()
 }

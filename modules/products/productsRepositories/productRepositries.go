@@ -1,6 +1,7 @@
 package productsRepositories
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 
@@ -17,6 +18,7 @@ type IProductRepository interface {
 	FindProduct(req *products.ProductFilter) ([]*products.Product, int)
 	InsertProduct(req *products.Product) (*products.Product, error)
 	UpdateProduct(req *products.Product) (*products.Product, error)
+	DeleteProduct(productId string) error
 }
 
 type productRepository struct {
@@ -126,4 +128,12 @@ func (r *productRepository) UpdateProduct(req *products.Product) (*products.Prod
 	}
 
 	return product, nil
+}
+
+func (r *productRepository) DeleteProduct(productId string) error {
+	query := `DELETE FROM products WHERE id = $1;`
+	if _, err := r.db.ExecContext(context.Background(), query, productId); err != nil {
+		return fmt.Errorf("delete product failed: %v", err)
+	}
+	return nil
 }
